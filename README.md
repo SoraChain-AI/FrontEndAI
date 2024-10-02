@@ -1,1 +1,1 @@
-# FrontEndAI
+Front end layer connecting blockchain layer and Universal AI . 
