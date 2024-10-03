@@ -42,9 +42,28 @@ const SectionPanelBlockChain = ({ sectionName, id }: SectionProps) => {
     context?.updateLog("connected to server  with wallet " + contract, id);
   };
 
+  const [account, setAccount] = useState<string | null>(null);
+
+  // Function to connect to MetaMask
+  const connectWallet = async () => {
+    if (window.ethereum) {
+      try {
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+        setAccount(accounts[0]);
+      } catch (error) {
+        console.error("User rejected the request", error);
+      }
+    } else {
+      alert("Please install MetaMask!");
+    }
+  };
+
   //initialized connection with blockchain server
   //we can do this with metamask for connecting to chain and getting addresses
   // useEffect(() => {
+  /*
   const initWeb3 = async () => {
     const providerUrl = blockChainServerUrl;
     const web3Instance = await new Web3(
@@ -75,6 +94,7 @@ const SectionPanelBlockChain = ({ sectionName, id }: SectionProps) => {
       //ex- fetching first trx of the latest block
     }
   };
+  */
 
   //method to call method of actual contract from front end
   // const callContractFunction = async () => {
@@ -111,10 +131,11 @@ const SectionPanelBlockChain = ({ sectionName, id }: SectionProps) => {
             // id="Submit1"
             type="button"
             onClick={() => {
-              initWeb3();
+              // initWeb3();
+              connectWallet();
             }}
           >
-            {"Connect Chain"}
+            {"Connect Wallet"}
           </button>
         </div>
         <div className="input-group mb-3">
