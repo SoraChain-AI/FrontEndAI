@@ -3,9 +3,10 @@ import "bootstrap/dist/css/bootstrap.css";
 
 interface Props {
   sectionName: string;
+  id: string;
 }
 
-const SectionPanelAI = ({ sectionName }: Props) => {
+const SectionPanelAI = ({ sectionName, id }: Props) => {
   const handleStartServer = (inputValue: string) => console.log(inputValue);
   const handleStartClient = (inputValue: string) => console.log(inputValue);
   return (
