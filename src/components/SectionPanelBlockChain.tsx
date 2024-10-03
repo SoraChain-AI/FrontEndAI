@@ -22,7 +22,8 @@ const SectionPanelBlockChain = ({ sectionName, id }: SectionProps) => {
   const handleDeployContract = (inputValue: string) => console.log(inputValue);
   const handleStackServer = (inputValue: string) => {
     console.log(inputValue);
-    // callContractFunction();
+
+    callContractFunction();
   };
   const handleStackClient = (inputValue: string) => console.log(inputValue);
   const [web3, setWeb3] = useState<Web3 | null>(null);
@@ -51,7 +52,12 @@ const SectionPanelBlockChain = ({ sectionName, id }: SectionProps) => {
         const accounts = await window.ethereum.request({
           method: "eth_requestAccounts",
         });
+        await window.ethereum.on("accountsChanged", function (accounts) {
+          // Time to reload your interface with accounts[0]!
+          console.log(accounts[0]);
+        });
         setAccount(accounts[0]);
+        initWeb3();
       } catch (error) {
         console.error("User rejected the request", error);
       }
@@ -63,7 +69,7 @@ const SectionPanelBlockChain = ({ sectionName, id }: SectionProps) => {
   //initialized connection with blockchain server
   //we can do this with metamask for connecting to chain and getting addresses
   // useEffect(() => {
-  /*
+
   const initWeb3 = async () => {
     const providerUrl = blockChainServerUrl;
     const web3Instance = await new Web3(
@@ -94,23 +100,40 @@ const SectionPanelBlockChain = ({ sectionName, id }: SectionProps) => {
       //ex- fetching first trx of the latest block
     }
   };
-  */
 
   //method to call method of actual contract from front end
-  // const callContractFunction = async () => {
-  //   if (contract) {
-  //     try {
-  //       const result = await contract.methods
-  //         .registerSubNetOwner()
-  //         .send({ from: accountaddress1 });
-  //       console.log("Result:", result);
-  //     } catch (error) {
-  //       console.error("Error calling contract function:", error);
-  //     }
-  //   } else {
-  //     console.error("Contract is not initialized");
-  //   }
-  // };
+  const callContractFunction = async () => {
+    if (contract) {
+      try {
+        if (window.ethereum) {
+          const accounts = await window.ethereum.request({
+            method: "eth_requestAccounts",
+          });
+          setAccount(accounts[0]);
+          const result = await contract.methods.registerSubNetOwner(11).send({
+            from: accounts[0],
+            value: web3?.utils.toWei("1", "ether"), // Amount of Ether sent (if applicable)
+            gas: "300000", // Try increasing the gas limit
+          });
+          console.log(
+            "Result:" + "Server " + accounts[0] + " registerd on the network "
+          );
+          context?.updateLog(
+            "\n Result" +
+              "server " +
+              accounts[0] +
+              " registered with the contract",
+            "1"
+          );
+        }
+      } catch (error) {
+        console.error("Error calling contract function:", error);
+        context?.updateLog("Error calling contract function:" + error, "1");
+      }
+    } else {
+      console.error("Contract is not initialized");
+    }
+  };
 
   return (
     <>
