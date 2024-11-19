@@ -17,6 +17,7 @@ export const logContext = createContext<logContextType | undefined>(
   undefined
 );
 
+
 export const UserProvider = ({ children }: logContextProviderProp) => {
   const [logs, setLogs] = useState("");
   const updateLog = (newLog: string) => {
