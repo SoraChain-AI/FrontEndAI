@@ -1,0 +1,58 @@
+.hero {
+    color: #fff;
+    display: flex;
+    align-items: flex-start;
+    gap: 32px;
+    padding: 40px 16px;
+    flex-wrap: wrap;
+  }
+  
+  .heroImage {
+    aspect-ratio: 1.78;
+    border-radius: 12px;
+    flex: 1;
+    min-width: 320px;
+    object-fit: contain;
+  }
+  
+  .content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 400px;
+    width: 400px;
+  }
+  
+  .title {
+    font: 700 48px/60px 'Space Grotesk', sans-serif;
+    letter-spacing: -2px;
+    margin: 0 0 8px;
+  }
+  
+  .description {
+    font: 400 16px/24px 'Space Grotesk', sans-serif;
+    margin: 0 0 32px;
+  }
+  
+  .connectButton {
+    background-color: rgba(43, 143, 237, 1);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    cursor: pointer;
+    font: 700 16px 'Space Grotesk', sans-serif;
+    padding: 14px 20px;
+    width: 158px;
+  }
+  
+  @media (max-width: 991px) {
+    .title {
+      font-size: 40px;
+      line-height: 56px;
+    }
+    
+    .heroImage {
+      max-width: 100%;
+    }
+  }
