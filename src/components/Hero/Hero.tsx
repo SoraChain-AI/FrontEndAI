@@ -63,7 +63,8 @@ export const Hero: React.FC = () => {
     console.log("connect to contract " + contract);
     console.log("Contract connected!");
     setConnected(true);
-    context?.setAccount(contract);
+    context.setAccount(contract);
+    console.log("connected to server  with wallet " + context.accountAddress);
     // Navigate to the dashboard page after connection
     navigate("/dashboard");
     // context?.updateLog("connected to server  with wallet " + contract, id);
@@ -71,7 +72,7 @@ export const Hero: React.FC = () => {
 
   useEffect(() => {
     const storedAccount = localStorage.getItem("connectedAccount");
-    if (storedAccount) {
+    if (storedAccount && window.ethereum) {
       try {
         const web3Instance = new Web3(window.ethereum);
 
@@ -79,8 +80,12 @@ export const Hero: React.FC = () => {
         setUserAccount(storedAccount);
         if (web3Instance.eth.defaultBlock) {
           setConnected(true);
-          context?.setAccount(storedAccount);
-          console.log("use effect stored account changes");
+          context.setAccount(storedAccount);
+          console.log(
+            "use effect stored account changes " +
+              storedAccount +
+              web3Instance.eth.defaultAccount
+          );
           const timer = setTimeout(() => {
             navigate("/dashboard");
           }, 3000); // navigate to dashboard after 1 second
@@ -97,7 +102,7 @@ export const Hero: React.FC = () => {
         setConnected(false);
       }
     }
-  }, []);
+  });
 
   // Function to connect to MetaMask
   const handleConnectWallet = async () => {
@@ -111,7 +116,7 @@ export const Hero: React.FC = () => {
           console.log(accounts[0]);
         });
         setUserAccount(accounts[0]);
-        context?.setAccount(accounts[0]);
+        context.setAccount(accounts[0]);
         // Store the connected account address in local storage
         localStorage.setItem("connectedAccount", accounts[0]);
         initWeb3();

@@ -44,6 +44,7 @@ export const SoraChainDashboard: React.FC = () => {
   useEffect(() => {
     const data = context?.accountAddress;
     setCurrentAddress(data);
+    console.log("connected to server  with wallet " + context?.accountAddress);
   });
   return (
     <div className={styles.container}>
@@ -64,12 +65,12 @@ export const SoraChainDashboard: React.FC = () => {
               <NavLink key={item.text} text={item.text} />
             ))}
           </div>
-          <span
+          <p
             className={styles.connectWallet}
             aria-label={context?.accountAddress}
           >
-            {currentAddress}
-          </span>
+            {context?.accountAddress}
+          </p>
         </nav>
       </header>
 
