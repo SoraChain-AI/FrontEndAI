@@ -1,20 +1,42 @@
 import { useState } from "react";
+import { useContext, useEffect } from "react";
 // import { ethers } from 'ethers';
-import Web3, { Contract, Web3BaseWallet } from "web3";
+import Web3, {
+  Contract,
+  HttpProvider,
+  Web3BaseProvider,
+  Web3BaseWallet,
+} from "web3";
+import {
+  blockChainServerUrl,
+  chainContractAddress,
+  contractABI,
+  registerServerFunction,
+  accountaddress1,
+} from "../../utils/constants";
+import { AccountContext } from "../../Contexts/AccountContext";
 
 export const useWallet = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [address, setAddress] = useState("");
+  const [method, setMethod] = useState("");
 
+  const [provider, setProvider] = useState<Web3BaseProvider | null>(null);
+  const context = useContext(AccountContext);
   const connectWallet = async () => {
     if (typeof window.ethereum !== "undefined") {
       try {
-        // await window.ethereum.request({ method: 'eth_requestAccounts' });
-        // const provider = new ethers.providers.Web3Provider(window.ethereum);
-        // const signer = provider.getSigner();
-        // const address = await signer.getAddress();
-        // setAddress(address);
-        // setIsConnected(true);
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+        setAddress(accounts[0]);
+        window.ethereum.on("accountsChanged", function (accounts) {
+          setAddress(accounts[0]);
+          context.setAccount(accounts[0]);
+        });
+        // setProvider ( new Web3.providers.HttpProvider(window.ethereum,{}));
+        setIsConnected(true);
+        console.log("connectedconnectWallet " + accounts[0]);
         return { success: true, address };
       } catch (error) {
         return { success: false, error };
@@ -23,7 +45,87 @@ export const useWallet = () => {
     return { success: false, error: "MetaMask not installed" };
   };
 
-  const sendTransaction = async (amount: string) => {
+  const initWeb3 = async (role: string) => {
+    const providerUrl = blockChainServerUrl;
+    const web3Instance = await new Web3(
+      new Web3.providers.HttpProvider(providerUrl)
+    );
+    const contractInstance = new web3Instance.eth.Contract(
+      contractABI,
+      chainContractAddress
+    );
+    if (Object.is(contractInstance, null)) {
+    } else {
+      // role == "TaskCreator" ? contractInstance.methods.stakeCreaterToken(rewardAmount) : contractInstance.methods.stakeToken(taskID, role);
+      // setMethod(contractInstance.methods);
+    }
+  };
+
+  // const getRoleFunction(role)
+
+  const sendCreatorTransaction = async (
+    rewardAmount: string,
+    stakeToken: string
+  ) => {
+    const connection = await connectWallet();
+    if (!connection.success) return { success: false, error: connection.error };
+
+    try {
+      const providerUrl = blockChainServerUrl;
+
+      // Request account access
+      if (typeof window.ethereum !== "undefined") {
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+        setAddress(accounts[0]);
+      }
+      console.log("sendCreatortrx " + providerUrl);
+      //use provider url if not using metamask
+      // const providerUrl = blockChainServerUrl;
+      const web3Instance = await new Web3(
+        new Web3.providers.HttpProvider(providerUrl)
+      );
+
+      const contractInstance = new web3Instance.eth.Contract(
+        contractABI,
+        chainContractAddress
+      );
+      if (Object.is(contractInstance, null)) {
+        console.log("contractInstance is null");
+      } else {
+        // Transaction details
+
+        console.log(
+          "contect instance detail" +
+            contractInstance.defaultChain.toString() +
+            address
+        );
+        const result = await contractInstance.methods
+          .stakeCreatorTokens(Web3.utils.toWei(String(rewardAmount), "ether")) // Replace with the desired amount
+          .send({
+            from: address,
+            value: Web3.utils.toWei(String(stakeToken), "ether"), // Amount of Ether sent (if applicable)
+            gas: "300000", // Try increasing the gas limit
+            gasPrice: Web3.utils.toWei("20", "gwei"), // Set the gas price
+          });
+        // Send the transaction
+        // const signer = provider?.isMetaMask ? provider.getSigner() : provider;
+        // const txHash = await web3Instance.eth.sendTransaction(tx);
+        // console.log("Transaction hash: ", txHash);
+
+        // // Wait for confirmation
+        // const receipt = await web3Instance.eth.getTransactionReceipt(
+        //   txHash.transactionHash
+        // );
+        // console.log("Transaction receipt: ", receipt);
+        return { success: true, transactionHash: result.transactionHash };
+      }
+    } catch (error) {
+      return { success: false, error };
+    }
+  };
+  const sendTransaction = async (taskID: string, role: string) => {
     if (!isConnected) {
       const connection = await connectWallet();
       if (!connection.success)
@@ -31,12 +133,8 @@ export const useWallet = () => {
     }
 
     try {
-      // const provider = new ethers.providers.Web3Provider(window.ethereum);
-      // const signer = provider.getSigner();
-      // const tx = await signer.sendTransaction({
-      //   to: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS,
-      //   value: ethers.utils.parseEther(amount)
-      // });
+      initWeb3(role);
+
       // await tx.wait();
       return { success: true };
     } catch (error) {
@@ -44,5 +142,48 @@ export const useWallet = () => {
     }
   };
 
-  return { isConnected, address, connectWallet, sendTransaction };
+  const sendTransactionWeb = async (
+    action: string,
+    ...args: any[]
+  ): Promise<{
+    success: boolean;
+    error?: string;
+    transactionHash?: string;
+  }> => {
+    if (action === "stakeTokenCreator") {
+      console.log("reward amount " + args[1] + " stake token " + args[4]);
+      const rewardAmount = args[1];
+      const stakeToken = args[4];
+      // implementation for stakeTokenCreator
+
+      const result = await sendCreatorTransaction(rewardAmount, stakeToken);
+      if (result != null && result.success)
+        return {
+          success: result.success,
+          transactionHash:
+            result.transactionHash === undefined ? "" : result.transactionHash,
+        };
+      else if (result != null && result.error)
+        return {
+          success: false,
+          error: result.error === undefined ? "" : result.error,
+        };
+    } else if (action === "stakeTokens") {
+      const taskID = args[0];
+      const stakeAmount = args[1];
+      // implementation for stakeTokens
+      return { success: true, transactionHash: "some-hash" };
+    } else {
+      throw new Error("Invalid action");
+    }
+    return { success: false, error: "result not found" };
+  };
+
+  return {
+    isConnected,
+    address,
+    connectWallet,
+    sendTransaction,
+    sendTransactionWeb,
+  };
 };
