@@ -148,10 +148,6 @@ export const Hero: React.FC = () => {
         "latest",
         0
       );
-      const logDetail =
-        chainContractAddress +
-        "\n with latest block transaction hash" +
-        trxDetail?.hash;
       // SetLog(logDetail);
       onContractConnect(chainContractAddress);
       // const trxDetail = await web3Instance.eth.getTransactionFromBlock("latest", 0);

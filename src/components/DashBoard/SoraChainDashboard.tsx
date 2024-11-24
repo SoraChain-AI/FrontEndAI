@@ -7,6 +7,9 @@ import { RolePanel } from "./RolePanel";
 import { useRole } from "../hooks/useRole";
 import { Role, RoleData } from "../types/RoleTypes";
 import { AccountContext } from "../../Contexts/AccountContext";
+import { RoleForm } from "../Roles/RoleForm";
+// import { Role } from "../types/RoleTypes";
+import { useWallet } from "../hooks/useWallet";
 
 const navItems = [
   { text: "Home", width: "38px" },
@@ -41,11 +44,22 @@ export const SoraChainDashboard: React.FC = () => {
   const [currentAddress, setCurrentAddress] = useState<string | null>(null);
   const context = useContext(AccountContext);
 
+  //Role Dependenct functions
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+
+  // const { isConnected, connectWallet } = useWallet();
+
+  // const handleRoleSelect = (role: Role) => {
+
+  //   setSelectedRole(role);   == handleRolechange
+  // selectedRole  = activeRole
+  // };
+
   useEffect(() => {
     const data = context?.accountAddress;
     setCurrentAddress(data);
     console.log("connected to server  with wallet " + context?.accountAddress);
-  });
+  },[context?.accountAddress]);
   return (
     <div className={styles.container}>
       <header className={styles.header} role="banner">
@@ -96,19 +110,19 @@ export const SoraChainDashboard: React.FC = () => {
 
           <p className={styles.instructions}>
             Choose your role, connect your wallet and get started.
-          </p>
+          </p>  
 
           {activeRole && <RolePanel role={activeRole} />}
-
-          {activeRole && (
-            <button
-              className={styles.continueButton}
-              aria-label={`Continue as ${activeRole}`}
-            >
-              Continue as{" "}
-              {roleOptions.find((r) => r.role === activeRole)?.title}
-            </button>
-          )}
+          {activeRole && <RoleForm role={activeRole} />}
+          {/* {activeRole && (
+            // <button
+            //   className={styles.continueButton}
+            //   aria-label={`Continue as ${activeRole}`}
+            // >
+            //   Continue as{" "}
+            //   {roleOptions.find((r) => r.role === activeRole)?.title}
+            // </button>
+          )} */}
         </section>
       </main>
     </div>

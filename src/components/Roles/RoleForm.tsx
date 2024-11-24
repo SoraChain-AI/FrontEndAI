@@ -13,7 +13,7 @@ interface RoleFormProps {
 }
 
 export const RoleForm: React.FC<RoleFormProps> = ({ role }) => {
-  const { sendTransaction } = useWallet();
+  const { isConnected, sendTransactionWeb: sendTransactionWeb } = useWallet();
   const [formData, setFormData] = useState<
     TaskCreatorForm | AggregatorForm | TrainerForm
   >({
@@ -33,15 +33,53 @@ export const RoleForm: React.FC<RoleFormProps> = ({ role }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const rewardAmount = 0;
     const minAmount =
       role === "taskCreator" ? "10" : role === "aggregator" ? "5" : "3";
-    const result = await sendTransaction(minAmount);
+
+    let result: any = {
+      success: false,
+      transactionHash: "Transaction failed",
+    };
+    if (role === "taskCreator") {
+      const taskName = (formData as TaskCreatorForm).taskName;
+      const rewardAmount = (formData as TaskCreatorForm).rewardAmount;
+      const llmSource = (formData as TaskCreatorForm).llmSource;
+      const datasetInfo = (formData as TaskCreatorForm).datasetInfo;
+      const stakeToken = (formData as TaskCreatorForm).stakeToken;
+
+      result = await sendTransactionWeb(
+        "stakeTokenCreator",
+        taskName,
+        rewardAmount,
+        llmSource,
+        datasetInfo,
+        stakeToken
+      );
+    } else if (role === "aggregator") {
+      const stakeAmount = (formData as AggregatorForm).stakeAmount;
+      const duration = (formData as AggregatorForm).duration;
+
+      result = await sendTransactionWeb(
+        "registerAggregator",
+        stakeAmount,
+        duration
+      );
+    } else if (role === "trainer") {
+      const nodes = (formData as TrainerForm).nodes;
+      const stakeAmount = (formData as TrainerForm).stakeAmount;
+
+      result = await sendTransactionWeb("registerTrainer", nodes, stakeAmount);
+    }
 
     if (!result.success) {
-      alert(`Transaction failed: ${result.error}`);
+      alert(`Transaction failed: ${result.error.message}`);
+    } else {
+      alert("Transaction successful!" + result.transactionHash);
     }
   };
 
+ 
   const renderTaskCreatorForm = () => (
     <form onSubmit={handleSubmit} className={styles.form}>
       <input
@@ -54,7 +92,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({ role }) => {
         className={styles.input}
       />
       <input
-        type="text"
+        type="number"
         name="rewardAmount"
         placeholder="Reward Amount (min 1 ETH)"
         value={(formData as TaskCreatorForm).rewardAmount}
@@ -81,8 +119,8 @@ export const RoleForm: React.FC<RoleFormProps> = ({ role }) => {
         className={styles.input}
       />
       <input
-        type="text"
-        name="stakeAmount"
+        type="number"
+        name="stakeToken"
         placeholder="Stake Amount (min 10 ETH)"
         value={(formData as TaskCreatorForm).stakeToken}
         onChange={handleInputChange}
@@ -90,7 +128,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({ role }) => {
         className={styles.input}
       />
       <button type="submit" className={styles.submitButton}>
-        Continue
+        Continue as ${role}
       </button>
     </form>
   );
@@ -116,7 +154,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({ role }) => {
         className={styles.input}
       />
       <button type="submit" className={styles.submitButton}>
-        Continue
+        Continue as ${role}
       </button>
     </form>
   );
@@ -133,7 +171,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({ role }) => {
         className={styles.input}
       />
       <input
-        type="text"
+        type="number"
         name="stakeAmount"
         placeholder="Stake Amount (min 3 ETH)"
         value={(formData as TrainerForm).stakeAmount}
@@ -142,7 +180,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({ role }) => {
         className={styles.input}
       />
       <button type="submit" className={styles.submitButton}>
-        `Continue as ${role}
+        Continue as ${role}
       </button>
     </form>
   );
