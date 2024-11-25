@@ -116,7 +116,11 @@ export const useWallet = () => {
       return { success: false, error };
     }
   };
-  const sendTransaction = async (taskID: string, role: string) => {
+  const sendTrainerTransaction = async (
+    taskID: string,
+    description: string,
+    stakeAmount: string
+  ) => {
     if (!isConnected) {
       const connection = await connectWallet();
       if (!connection.success)
@@ -124,10 +128,40 @@ export const useWallet = () => {
     }
 
     try {
-      initWeb3(role);
+      const providerUrl = blockChainServerUrl;
 
-      // await tx.wait();
-      return { success: true };
+      // Request account access
+      if (typeof window.ethereum !== "undefined") {
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+        setAddress(accounts[0]);
+      }
+      //use provider url if not using metamask
+      // const providerUrl = blockChainServerUrl;
+      const web3Instance = await new Web3(
+        new Web3.providers.HttpProvider(providerUrl)
+      );
+
+      const contractInstance = new web3Instance.eth.Contract(
+        contractABI,
+        chainContractAddress
+      );
+      if (Object.is(contractInstance, null)) {
+        console.log("contractInstance is null");
+      } else {
+        // Transaction details
+
+        const result = await contractInstance.methods
+          .stakeTokens(taskID, "3") // Replace with the desired amount
+          .send({
+            from: address,
+            value: Web3.utils.toWei(String(stakeAmount), "ether"), // Amount of Ether sent (if applicable)
+            gas: "300000", // Try increasing the gas limit
+            gasPrice: Web3.utils.toWei("20", "gwei"), // Set the gas price
+          });
+        return { success: true, transactionHash: result.transactionHash };
+      }
     } catch (error) {
       return { success: false, error };
     }
@@ -160,17 +194,25 @@ export const useWallet = () => {
           success: false,
           error: result.error === undefined ? "" : result.error,
         };
-    } else if (action === "stakeTokens") {
+    } else if (action === "stakeTrainerNode") {
       const taskID = args[0];
-      const stakeAmount = args[1];
-      // implementation for stakeTokens
-      return { success: true, transactionHash: "some-hash" };
-    } else {
-      throw new Error("Invalid action");
+      const NodeDescription = args[1];
+      const stakeAmount = args[2];
+      console.log("taskID- " + taskID + " descr" + NodeDescription);
+      const result = await sendTrainerTransaction(
+        taskID,
+        NodeDescription,
+        stakeAmount
+      );
+      if (result != null && result.success) {
+        // implementation for stakeTokens
+        return { success: true, transactionHash: "some-hash" };
+      } else {
+        throw new Error("Invalid action");
+      }
+      return { success: false, error: "result not found" };
     }
-    return { success: false, error: "result not found" };
   };
-
   const callChainFunction = async (
     action: string,
     ...args: any[]
@@ -242,7 +284,7 @@ export const useWallet = () => {
     isConnected,
     address,
     connectWallet,
-    sendTransaction,
+    // sendTransaction,
     sendTransactionWeb,
     callChainFunction,
   };

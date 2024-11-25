@@ -44,6 +44,7 @@ const TrainerNode = () => {
 
   const handleTaskChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedTask(parseInt(event.target.value));
+    localStorage.setItem("selectedTask", event.target.value);
   };
 
   return (

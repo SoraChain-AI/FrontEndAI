@@ -15,6 +15,7 @@ interface RoleFormProps {
 
 export const RoleForm: React.FC<RoleFormProps> = ({ role }) => {
   const { isConnected, sendTransactionWeb: sendTransactionWeb } = useWallet();
+
   const [formData, setFormData] = useState<
     TaskCreatorForm | AggregatorForm | TrainerForm
   >({
@@ -67,10 +68,17 @@ export const RoleForm: React.FC<RoleFormProps> = ({ role }) => {
         duration
       );
     } else if (role === "trainer") {
-      const nodes = (formData as TrainerForm).nodes;
+      const nodesDescription = (formData as TrainerForm).nodes;
       const stakeAmount = (formData as TrainerForm).stakeAmount;
+      // const selectedTask = (formData as TrainerForm).selectedTask;
+      const selectedTask = localStorage.getItem("selectedTask");
 
-      result = await sendTransactionWeb("registerTrainer", nodes, stakeAmount);
+      result = await sendTransactionWeb(
+        "stakeTrainerNode",
+        selectedTask,
+        nodesDescription,
+        stakeAmount
+      );
     }
 
     if (!result.success) {
@@ -80,7 +88,6 @@ export const RoleForm: React.FC<RoleFormProps> = ({ role }) => {
     }
   };
 
- 
   const renderTaskCreatorForm = () => (
     <form onSubmit={handleSubmit} className={styles.form}>
       <input
@@ -165,7 +172,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({ role }) => {
       <input
         type="text"
         name="nodes"
-        placeholder="Number of Nodes (min 3)"
+        placeholder="Description"
         value={(formData as TrainerForm).nodes}
         onChange={handleInputChange}
         required
