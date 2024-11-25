@@ -15,6 +15,7 @@ import {
   accountaddress1,
 } from "../../utils/constants";
 import { AccountContext } from "../../Contexts/AccountContext";
+import { TaskSummery } from "../types/Tasks";
 
 export const useWallet = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -109,16 +110,6 @@ export const useWallet = () => {
             gas: "300000", // Try increasing the gas limit
             gasPrice: Web3.utils.toWei("20", "gwei"), // Set the gas price
           });
-        // Send the transaction
-        // const signer = provider?.isMetaMask ? provider.getSigner() : provider;
-        // const txHash = await web3Instance.eth.sendTransaction(tx);
-        // console.log("Transaction hash: ", txHash);
-
-        // // Wait for confirmation
-        // const receipt = await web3Instance.eth.getTransactionReceipt(
-        //   txHash.transactionHash
-        // );
-        // console.log("Transaction receipt: ", receipt);
         return { success: true, transactionHash: result.transactionHash };
       }
     } catch (error) {
@@ -149,6 +140,7 @@ export const useWallet = () => {
     success: boolean;
     error?: string;
     transactionHash?: string;
+    taskID?: string;
   }> => {
     if (action === "stakeTokenCreator") {
       console.log("reward amount " + args[1] + " stake token " + args[4]);
@@ -157,13 +149,13 @@ export const useWallet = () => {
       // implementation for stakeTokenCreator
 
       const result = await sendCreatorTransaction(rewardAmount, stakeToken);
-      if (result != null && result.success)
+      if (result != null && result.success) {
         return {
           success: result.success,
           transactionHash:
             result.transactionHash === undefined ? "" : result.transactionHash,
         };
-      else if (result != null && result.error)
+      } else if (result != null && result.error)
         return {
           success: false,
           error: result.error === undefined ? "" : result.error,
@@ -179,11 +171,79 @@ export const useWallet = () => {
     return { success: false, error: "result not found" };
   };
 
+  const callChainFunction = async (
+    action: string,
+    ...args: any[]
+  ): Promise<Record<string, any>> => {
+    if (action === "getTasks") {
+      const connection = await connectWallet();
+      if (!connection.success)
+        return { success: false, error: connection.error };
+
+      try {
+        const providerUrl = blockChainServerUrl;
+
+        // Request account access
+        if (typeof window.ethereum !== "undefined") {
+          const accounts = await window.ethereum.request({
+            method: "eth_requestAccounts",
+          });
+          setAddress(accounts[0]);
+        }
+        console.log("sendCreatortrx " + providerUrl);
+        //use provider url if not using metamask
+        // const providerUrl = blockChainServerUrl;
+        const web3Instance = await new Web3(
+          new Web3.providers.HttpProvider(providerUrl)
+        );
+        const contractInstance = new web3Instance.eth.Contract(
+          contractABI,
+          chainContractAddress
+        );
+        if (Object.is(contractInstance, null)) {
+          console.log("contractInstance is null");
+        } else {
+          // Transaction details
+
+          console.log(
+            "contractt instance detail" +
+              contractInstance.defaultChain.toString() +
+              address
+          );
+          const result = await contractInstance.methods
+            .getAvailableTasks()
+            .call();
+          console.log("Available Tasks:", result);
+
+          // const result = await contractInstance.methods
+          //   .getAvailableTasks() // Replace with the desired amount
+          //   .call({
+          //     from: address,
+          //     gas: "300000", // Try increasing the gas limit
+          //     gasPrice: Web3.utils.toWei("20", "gwei"), // Set the gas price
+          //   });
+          // console.log("tasks " + result.toString());
+          // const tasks: TaskSummery[] = result.map((task: any) => ({
+          //   id: task.id.toString(),
+          //   description: task.description,
+          //   isActive: task.isActive,
+          //   assignedTo: task.assignedTo,
+          // }));
+          // console.log("tasks " + tasks.toString());
+
+          return { success: true, result };
+        }
+      } catch (error) {
+        return { success: false, error };
+      }
+    }
+  };
   return {
     isConnected,
     address,
     connectWallet,
     sendTransaction,
     sendTransactionWeb,
+    callChainFunction,
   };
 };

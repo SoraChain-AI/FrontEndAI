@@ -72,17 +72,10 @@ export const contractABI = [
     name: "getAvailableTasks",
     inputs: [],
     outputs: [
-      {
-        name: "",
-        type: "tuple[]",
-        internalType: "struct BaseTask.TaskSummary[]",
-        components: [
-          { name: "id", type: "uint256", internalType: "uint256" },
-          { name: "description", type: "string", internalType: "string" },
-          { name: "isActive", type: "bool", internalType: "bool" },
-          { name: "assignedTo", type: "address", internalType: "address" },
-        ],
-      },
+      { name: "", type: "uint256[]", internalType: "uint256[]" },
+      { name: "", type: "string[]", internalType: "string[]" },
+      { name: "", type: "bool[]", internalType: "bool[]" },
+      { name: "", type: "address[]", internalType: "address[]" },
     ],
     stateMutability: "view",
   },

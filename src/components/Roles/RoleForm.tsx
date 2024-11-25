@@ -7,6 +7,7 @@ import {
   TrainerForm,
 } from "../types/RoleTypes";
 import { useWallet } from "../hooks/useWallet";
+import TrainerNode from "../Trainer/TrainerNode";
 
 interface RoleFormProps {
   role: Role;
@@ -179,6 +180,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({ role }) => {
         required
         className={styles.input}
       />
+      <TrainerNode />
       <button type="submit" className={styles.submitButton}>
         Continue as ${role}
       </button>
