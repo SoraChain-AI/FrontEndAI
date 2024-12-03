@@ -3,7 +3,6 @@ import "bootstrap/dist/css/bootstrap.css";
 import { useWallet } from "../hooks/useWallet";
 import { TaskSummery } from "../types/Tasks";
 import { Form } from "react-router-dom";
-// import styles from "./TrainerNode.module.css";
 
 interface Task {
   taskID: number;
@@ -24,7 +23,6 @@ const TrainerNode = () => {
       } else {
         const response = result.result;
         alert("Transaction successful!" + response);
-        console.log("Available response:", response);
         if (response && response[0] && Array.isArray(response[0])) {
           const tasks = response[0].map((_, i: number) => ({
             id: response[0][i].toString(),
