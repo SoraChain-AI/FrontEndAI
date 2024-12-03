@@ -9,7 +9,6 @@ interface Props {
 const InputPanel = ({ buttonName, onSubmitClicked }: Props) => {
   const [inputValue, setInputValue] = useState("");
 
-  // const handleButtonCLick = () => onSubmitClicked(inputValue);
   return (
     <>
       <input
@@ -25,7 +24,6 @@ const InputPanel = ({ buttonName, onSubmitClicked }: Props) => {
       ></input>
       <button
         className="btn btn-primary"
-        // id="Submit1"
         type="submit"
         onClick={() => {
           onSubmitClicked(inputValue);
