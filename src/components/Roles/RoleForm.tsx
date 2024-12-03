@@ -70,7 +70,6 @@ export const RoleForm: React.FC<RoleFormProps> = ({ role }) => {
     } else if (role === "trainer") {
       const nodesDescription = (formData as TrainerForm).nodes;
       const stakeAmount = (formData as TrainerForm).stakeAmount;
-      // const selectedTask = (formData as TrainerForm).selectedTask;
       const selectedTask = localStorage.getItem("selectedTask");
 
       result = await sendTransactionWeb(

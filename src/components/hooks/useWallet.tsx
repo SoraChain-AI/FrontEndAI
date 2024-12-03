@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useContext, useEffect } from "react";
-// import { ethers } from 'ethers';
 import Web3, {
   Contract,
   HttpProvider,
