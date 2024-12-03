@@ -49,11 +49,6 @@ export const SoraChainDashboard: React.FC = () => {
 
   // const { isConnected, connectWallet } = useWallet();
 
-  // const handleRoleSelect = (role: Role) => {
-
-  //   setSelectedRole(role);   == handleRolechange
-  // selectedRole  = activeRole
-  // };
 
   useEffect(() => {
     const data = context?.accountAddress;
