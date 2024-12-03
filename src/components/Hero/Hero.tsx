@@ -148,11 +148,7 @@ export const Hero: React.FC = () => {
         "latest",
         0
       );
-      // SetLog(logDetail);
       onContractConnect(chainContractAddress);
-      // const trxDetail = await web3Instance.eth.getTransactionFromBlock("latest", 0);
-      //we can access all other information of blockchain
-      //ex- fetching first trx of the latest block
     }
   };
 

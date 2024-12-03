@@ -35,7 +35,6 @@ export const useWallet = () => {
           setAddress(accounts[0]);
           context.setAccount(accounts[0]);
         });
-        // setProvider ( new Web3.providers.HttpProvider(window.ethereum,{}));
         setIsConnected(true);
         console.log("connectedconnectWallet " + accounts[0]);
         return { success: true, address };
