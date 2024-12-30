@@ -49,12 +49,24 @@ export const SoraChainDashboard: React.FC = () => {
 
   // const { isConnected, connectWallet } = useWallet();
 
-
   useEffect(() => {
     const data = context?.accountAddress;
     setCurrentAddress(data);
     console.log("connected to server  with wallet " + context?.accountAddress);
-  },[context?.accountAddress]);
+    if (typeof window.ethereum !== "undefined") {
+      // Listen for account changes
+      window.ethereum.on("accountsChanged", (accounts: string[]) => {
+        if (accounts.length > 0) {
+          setCurrentAddress(accounts[0]); // Update the state with the new selected account
+          context.setAccount(accounts[0]);
+          localStorage.setItem("connectedAccount", accounts[0]);
+        } else {
+          setCurrentAddress(null); // Handle case where no account is selected
+          context.setAccount(null);
+        }
+      });
+    }
+  }, []); // [context?.accountAddress]);
   return (
     <div className={styles.container}>
       <header className={styles.header} role="banner">
@@ -76,7 +88,11 @@ export const SoraChainDashboard: React.FC = () => {
           </div>
           <p
             className={styles.connectWallet}
-            aria-label={context?.accountAddress}
+            aria-label={
+              context?.accountAddress
+                ? `Connected to ${context?.accountAddress}`
+                : "Connect Wallet"
+            }
           >
             {context?.accountAddress}
           </p>
@@ -105,7 +121,7 @@ export const SoraChainDashboard: React.FC = () => {
 
           <p className={styles.instructions}>
             Choose your role, connect your wallet and get started.
-          </p>  
+          </p>
 
           {activeRole && <RolePanel role={activeRole} />}
           {activeRole && <RoleForm role={activeRole} />}

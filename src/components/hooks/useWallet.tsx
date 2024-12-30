@@ -15,6 +15,7 @@ import {
 } from "../../utils/constants";
 import { AccountContext } from "../../Contexts/AccountContext";
 import { TaskSummery } from "../types/Tasks";
+import { parseTransactionError } from "../../utils/transactionErrorUtils";
 
 export const useWallet = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -29,13 +30,15 @@ export const useWallet = () => {
         const accounts = await window.ethereum.request({
           method: "eth_requestAccounts",
         });
-        setAddress(accounts[0]);
-        window.ethereum.on("accountsChanged", function (accounts) {
+        if (context.accountAddress != null) {
+          setAddress(context.accountAddress);
+        }
+        await window.ethereum.on("accountsChanged", function (accounts) {
           setAddress(accounts[0]);
           context.setAccount(accounts[0]);
         });
         setIsConnected(true);
-        console.log("connectedconnectWallet " + accounts[0]);
+        console.log("connectedconnectWallet " + context.accountAddress);
         return { success: true, address };
       } catch (error) {
         return { success: false, error };
@@ -77,9 +80,8 @@ export const useWallet = () => {
         const accounts = await window.ethereum.request({
           method: "eth_requestAccounts",
         });
-        setAddress(accounts[0]);
+        setAddress(context.accountAddress);
       }
-      console.log("sendCreatortrx " + providerUrl);
       //use provider url if not using metamask
       // const providerUrl = blockChainServerUrl;
       const web3Instance = await new Web3(
@@ -98,22 +100,64 @@ export const useWallet = () => {
         console.log(
           "contect instance detail" +
             contractInstance.defaultChain.toString() +
-            address
+            context.accountAddress
         );
         const result = await contractInstance.methods
           .stakeCreatorTokens(Web3.utils.toWei(String(rewardAmount), "ether")) // Replace with the desired amount
           .send({
-            from: address,
+            from: context.accountAddress,
             value: Web3.utils.toWei(String(stakeToken), "ether"), // Amount of Ether sent (if applicable)
             gas: "300000", // Try increasing the gas limit
             gasPrice: Web3.utils.toWei("20", "gwei"), // Set the gas price
           });
+        console.log(result);
         return { success: true, transactionHash: result.transactionHash };
       }
     } catch (error) {
+      // getRevertReason(error.transactionHash);
+
+      const errorMessage = await parseTransactionError(error);
+      console.error("Transaction failed:", errorMessage);
       return { success: false, error };
     }
   };
+
+  async function getRevertReason(txHash: string) {
+    try {
+      const receipt = await web3.eth.getTransactionReceipt(txHash);
+      const web3Instance = await new Web3(
+        new Web3.providers.HttpProvider(blockChainServerUrl)
+      );
+
+      if (receipt.status === false) {
+        // The transaction has failed; now let's extract the revert message
+        const tx = await web3Instance.eth.getTransaction(txHash);
+
+        // Retrieve the input data
+        const inputData = tx.input;
+
+        // Check if input data is available (the actual transaction that was sent to the contract)
+        if (inputData && inputData !== "0x") {
+          const errorMessage = await web3Instance.eth.call({
+            to: tx.to,
+            data: inputData,
+          });
+
+          // If the error message is available, decode it (assuming it's a revert string)
+          const decodedErrorMessage = web3Instance.utils.toUtf8(errorMessage);
+          console.log("Revert reason:", decodedErrorMessage);
+          return decodedErrorMessage;
+        } else {
+          console.log("No input data found.");
+        }
+      } else {
+        console.log("Transaction was successful!");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
   const sendTrainerTransaction = async (
     taskID: string,
     description: string,
@@ -133,7 +177,7 @@ export const useWallet = () => {
         const accounts = await window.ethereum.request({
           method: "eth_requestAccounts",
         });
-        setAddress(accounts[0]);
+        setAddress(context.accountAddress);
       }
       //use provider url if not using metamask
       // const providerUrl = blockChainServerUrl;
@@ -158,6 +202,7 @@ export const useWallet = () => {
             gas: "300000", // Try increasing the gas limit
             gasPrice: Web3.utils.toWei("20", "gwei"), // Set the gas price
           });
+        console.log("result of trainer " + result);
         return { success: true, transactionHash: result.transactionHash };
       }
     } catch (error) {
@@ -181,6 +226,7 @@ export const useWallet = () => {
       // implementation for stakeTokenCreator
 
       const result = await sendCreatorTransaction(rewardAmount, stakeToken);
+      print("reasult after sendCreatorTransaction " + result);
       if (result != null && result.success) {
         return {
           success: result.success,
@@ -202,6 +248,7 @@ export const useWallet = () => {
         NodeDescription,
         stakeAmount
       );
+      console.log("result of trainer " + result);
       if (result != null && result.success) {
         // implementation for stakeTokens
         return { success: true, transactionHash: "some-hash" };
@@ -210,6 +257,7 @@ export const useWallet = () => {
       }
       return { success: false, error: "result not found" };
     }
+    return { success: false, error: "result not found" };
   };
   const callChainFunction = async (
     action: string,
@@ -230,7 +278,6 @@ export const useWallet = () => {
           });
           setAddress(accounts[0]);
         }
-        console.log("sendCreatortrx " + providerUrl);
         //use provider url if not using metamask
         // const providerUrl = blockChainServerUrl;
         const web3Instance = await new Web3(

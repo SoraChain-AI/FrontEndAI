@@ -63,7 +63,7 @@ export const Hero: React.FC = () => {
     console.log("connect to contract " + contract);
     console.log("Contract connected!");
     setConnected(true);
-    context.setAccount(contract);
+    // context.setAccount(contract);
     console.log("connected to server  with wallet " + context.accountAddress);
     // Navigate to the dashboard page after connection
     navigate("/dashboard");

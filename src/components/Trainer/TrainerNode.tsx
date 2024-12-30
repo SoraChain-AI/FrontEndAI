@@ -22,7 +22,6 @@ const TrainerNode = () => {
         alert(`Transaction failed: ${result.error.message}`);
       } else {
         const response = result.result;
-        alert("Transaction successful!" + response);
         if (response && response[0] && Array.isArray(response[0])) {
           const tasks = response[0].map((_, i: number) => ({
             id: response[0][i].toString(),

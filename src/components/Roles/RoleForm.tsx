@@ -39,10 +39,11 @@ export const RoleForm: React.FC<RoleFormProps> = ({ role }) => {
     const minAmount =
       role === "taskCreator" ? "10" : role === "aggregator" ? "5" : "3";
 
-    let result: any = {
-      success: false,
-      transactionHash: "Transaction failed",
-    };
+    let result;
+    // : any = {
+    //   success: false,
+    //   transactionHash: "Transaction failed",
+    // };
     if (role === "taskCreator") {
       const taskName = (formData as TaskCreatorForm).taskName;
       const rewardAmount = (formData as TaskCreatorForm).rewardAmount;
@@ -83,7 +84,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({ role }) => {
     if (!result.success) {
       alert(`Transaction failed: ${result.error.message}`);
     } else {
-      alert("Transaction successful!" + result.transactionHash);
+      alert("Transaction successful with hash!" + result.transactionHash);
     }
   };
 
@@ -135,7 +136,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({ role }) => {
         className={styles.input}
       />
       <button type="submit" className={styles.submitButton}>
-        Continue as ${role}
+        Continue as {role}
       </button>
     </form>
   );
